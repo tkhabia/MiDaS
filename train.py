@@ -68,5 +68,6 @@ def train (model  , train_loader  , optimizer  , criterion , epoch):
             optimizer.step()
         if ep %20 == 0 :
             print("loss " + loss)
+    torch.save(model.state_dict(), ".")
 
-
+train (model  , train_loader  , optimizer  , criterion , epoch)
