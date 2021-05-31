@@ -41,31 +41,32 @@ class walldata(Dataset):
         return {"img":img , "mask":mask}
 
 data = []
-for i in range(146):
+for i in range(1, 1409):
     data.append(["./input/img/{}.png".format(i) , "./input/label/{}.png".format(i)])
 
 datawall = walldata(data , transform) 
 
 optimizer = torch.optim.Adam( model.parameters(), 1e-3 )
-l1_criterion = nn.L1Loss()
+criterion = nn.L1Loss()
 epoch = 400 
 train_loader = DataLoader(datawall) 
-# def train (model  , train_loader , val_loader , optimizer  , criterion , epoch):
-train_loss = []
-val_loss =[]
-for ep in range(epoch):
-    rloss = 0 ; 
-    for train in train_loader :
-        optimizer.zero_grad()
-        img = torch.autograd.Variable( train['img'].cuda())
-        mask =torch.autograd.Variable( train['mask'].cuda())
+def train (model  , train_loader  , optimizer  , criterion , epoch):
+    train_loss = []
+    # val_loss =[]
+    for ep in range(epoch):
+        rloss = 0 ; 
+        for train in train_loader :
 
-        output = model(img)
-        loss = l1_criterion(output, mask)
-        train_loss.append(loss)
-        loss.backward()
-        optimizer.step()
-        
+            optimizer.zero_grad()
+            img = torch.autograd.Variable( train['img'].cuda())
+            mask =torch.autograd.Variable( train['mask'].cuda())
 
+            output = model(img)
+            loss = criterion(output, mask)
+            train_loss.append(loss)
+            loss.backward()
+            optimizer.step()
+        if ep %20 == 0 :
+            print("loss " + loss)
 
 
