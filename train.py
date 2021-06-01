@@ -15,7 +15,7 @@ model = MidasNet_small(None , features=64, backbone="efficientnet_lite3", export
 transform = transforms = transforms.Compose(
     [
     transforms.ToTensor(),
-    transforms.RandomHorizontalFlip(),
+    # transforms.RandomHorizontalFlip(),
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ]
 )
@@ -36,7 +36,7 @@ class walldata(Dataset):
         mask = cv2.resize( cv2.imread( self.data[index][1] ,  0 ) , ( 256 , 256 ))
         
         img = self.transform(img)
-        mask = self.transform(mask) 
+        mask = mask
         
         return {"img":img , "mask":mask}
 
@@ -53,7 +53,7 @@ train_loader = DataLoader(datawall ,batch_size=16 , shuffle=True , num_workers=2
 
 for i in train_loader:
     print(i)
-    
+
 def train (model  , train_loader  , optimizer  , criterion , epoch):
     train_loss = []
     # val_loss =[]
