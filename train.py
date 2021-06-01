@@ -31,7 +31,7 @@ class walldata(Dataset):
     
     def __getitem__(self, index):
         img = cv2.cvtColor( cv2.imread(self.data[index][0]) , cv2.COLOR_BGR2RGB)
-        img = cv2.resize(img , ( 256, 256))
+        img = cv2.resize(img , ( 256, 256 ))
 
         mask = cv2.resize( cv2.imread( self.data[index][1] ,  0 ) , ( 256 , 256 ))
         
@@ -49,7 +49,11 @@ datawall = walldata(data , transform)
 optimizer = torch.optim.Adam( model.parameters(), 1e-3 )
 criterion = nn.L1Loss()
 epoch = 400 
-train_loader = DataLoader(datawall) 
+train_loader = DataLoader(datawall ,batch_size=16 , shuffle=True , num_workers=2) 
+
+for i in train_loader:
+    print(i)
+    
 def train (model  , train_loader  , optimizer  , criterion , epoch):
     train_loss = []
     # val_loss =[]
@@ -71,3 +75,4 @@ def train (model  , train_loader  , optimizer  , criterion , epoch):
     torch.save(model.state_dict(), ".")
 
 train (model  , train_loader  , optimizer  , criterion , epoch)
+
