@@ -51,12 +51,11 @@ criterion = nn.L1Loss()
 epoch = 400 
 train_loader = DataLoader(datawall ,batch_size=16 , shuffle=True , num_workers=2) 
 
-for i in train_loader:
-    print(i)
 
 def train (model  , train_loader  , optimizer  , criterion , epoch):
     train_loss = []
     # val_loss =[]
+    model.cuda()
     for ep in range(epoch):
         rloss = 0 ; 
         for train in train_loader :
@@ -72,7 +71,7 @@ def train (model  , train_loader  , optimizer  , criterion , epoch):
             optimizer.step()
         if ep %20 == 0 :
             print("loss " + loss)
-    torch.save(model.state_dict(), ".")
+        torch.save(model.state_dict(), ".")
 
 train (model  , train_loader  , optimizer  , criterion , epoch)
 
