@@ -8,8 +8,9 @@ from torchvision import transforms
 from torch.utils.data import DataLoader , Dataset
 from midas.midas_net_custom import MidasNet_small
 import os.path as path
-import glob
-
+import random
+from torch.optim.lr_scheduler import StepLR
+import matplotlib.pyplot as plt
 model = MidasNet_small(None , features=64, backbone="efficientnet_lite3", exportable=True, non_negative=True, blocks={'expand': True})
 
 transform = transforms = transforms.Compose(
@@ -44,21 +45,24 @@ data = []
 for i in range(1, 1409):
     data.append(["./input/img/{}.png".format(i) , "./input/label/{}.png".format(i)])
 
-datawall = walldata(data , transform) 
+random.shuffle(data)
+datawall = walldata(data[:len(data)*8//10] , transform) 
+valwall =  walldata(data[:len(data)*8//10] , transform) 
 
 optimizer = torch.optim.Adam( model.parameters(), 1e-3 )
 criterion = nn.L1Loss()
 epoch = 60
 train_loader = DataLoader(datawall ,batch_size=16 , shuffle=True , num_workers=2) 
+scheduler = StepLR(optimizer, step_size=2, gamma=0.9)
 
-
-def train (model  , train_loader  , optimizer  , criterion , epoch):
+def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch , scheduler):
     train_loss = []
-    # val_loss =[]
+    val_loss =[]
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     for ep in range(epoch):
-        
+        scheduler.step()
         for train in train_loader :
 
             optimizer.zero_grad()
@@ -67,12 +71,24 @@ def train (model  , train_loader  , optimizer  , criterion , epoch):
 
             output = model(img)
             loss = criterion(output, mask)
-            train_loss.append(loss)
             loss.backward()
             optimizer.step()
-        if ep %4 == 0 :
-            print("loss " , loss)
-        torch.save(model.state_dict(), "../drive/MyDrive/model.pt")
+        train_loss.append(loss)
 
-train (model  , train_loader  , optimizer  , criterion , epoch)
+        if ep %4 == 0 :
+            with torch.no_grad():
+                for train in val_loader:
+                    img = torch.autograd.Variable( train['img'].to(device))
+                    mask =torch.autograd.Variable( train['mask'].to(device))
+                    output = model(img)
+                    loss_t = criterion(output, mask)
+                val_loss.append(loss_t)
+            print("loss " , loss , "val loss = " , loss_t)
+            
+        torch.save(model.state_dict(), "../drive/MyDrive/model.pt")
+    plt.plot(loss , label="loss")
+    plt.plot(loss_t , label="Val Loss")
+    plt.show()
+
+train (model  , train_loader  , optimizer  , criterion , epoch, scheduler)
 
