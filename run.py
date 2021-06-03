@@ -136,7 +136,7 @@ def run(input_path, output_path, model_path, model_type="large", optimize=True):
         filename = os.path.join(
             output_path, os.path.splitext(os.path.basename(img_name))[0]
         )
-        utils.write_depth(filename, prediction, bits=2)
+        utils.write_depth(filename, prediction, img,  bits=1)
 
     print("finished")
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     default_models = {
-        "midas_v21_small": "weights/midas_v21_small-70d6b9c8.pt",
+        "midas_v21_small": "weights/model.pt",
         "midas_v21": "weights/midas_v21-f6b98070.pt",
         "dpt_large": "weights/dpt_large-midas-2f21e586.pt",
         "dpt_hybrid": "weights/dpt_hybrid-midas-501f0c75.pt",

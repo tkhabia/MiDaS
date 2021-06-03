@@ -5,6 +5,7 @@ import re
 import numpy as np
 import cv2
 import torch
+from PIL import Image
 
 
 def read_pfm(path):
@@ -163,28 +164,33 @@ def resize_depth(depth, width, height):
 
     return depth_resized
 
-def write_depth(path, depth, bits=1):
+def write_depth(path, depth , img, bits=1):
     """Write depth map to pfm and png file.
 
     Args:
         path (str): filepath without extension
         depth (array): depth
     """
-    write_pfm(path + ".pfm", depth.astype(np.float32))
+    # write_pfm(path + ".pfm", depth.astype(np.float32))
 
     depth_min = depth.min()
     depth_max = depth.max()
+    thresh = (depth_max + depth_min  )/ 2 
+    for i in range(len(depth)):
+        for j in range(len(depth[0])):
+            if depth[i , j ]  > thresh:
+                img[i , j] =( img[i, j ] *2 + [255 , 0 , 0 ] * 8)//10 
+    cv2.imwrite(path + ".png", img)
+    # max_val = (2**(8*bits))-1
 
-    max_val = (2**(8*bits))-1
+    # if depth_max - depth_min > np.finfo("float").eps:
+    #     out = max_val * (depth - depth_min) / (depth_max - depth_min)
+    # else:
+    #     out = np.zeros(depth.shape, dtype=depth.type)
 
-    if depth_max - depth_min > np.finfo("float").eps:
-        out = max_val * (depth - depth_min) / (depth_max - depth_min)
-    else:
-        out = np.zeros(depth.shape, dtype=depth.type)
-
-    if bits == 1:
-        cv2.imwrite(path + ".png", out.astype("uint8"))
-    elif bits == 2:
-        cv2.imwrite(path + ".png", out.astype("uint16"))
+    # if bits == 1:
+    #     cv2.imwrite(path + ".png", out.astype("uint8"))
+    # elif bits == 2:
+    #     cv2.imwrite(path + ".png", out.astype("uint16"))
 
     return

@@ -48,30 +48,31 @@ datawall = walldata(data , transform)
 
 optimizer = torch.optim.Adam( model.parameters(), 1e-3 )
 criterion = nn.L1Loss()
-epoch = 400 
+epoch = 60
 train_loader = DataLoader(datawall ,batch_size=16 , shuffle=True , num_workers=2) 
 
 
 def train (model  , train_loader  , optimizer  , criterion , epoch):
     train_loss = []
     # val_loss =[]
-    model.cuda()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     for ep in range(epoch):
-        rloss = 0 ; 
+        
         for train in train_loader :
 
             optimizer.zero_grad()
-            img = torch.autograd.Variable( train['img'].cuda())
-            mask =torch.autograd.Variable( train['mask'].cuda())
+            img = torch.autograd.Variable( train['img'].to(device))
+            mask =torch.autograd.Variable( train['mask'].to(device))
 
             output = model(img)
             loss = criterion(output, mask)
             train_loss.append(loss)
             loss.backward()
             optimizer.step()
-        if ep %20 == 0 :
-            print("loss " + loss)
-        torch.save(model.state_dict(), ".")
+        if ep %4 == 0 :
+            print("loss " , loss)
+        torch.save(model.state_dict(), "../drive/MyDrive/model.pt")
 
 train (model  , train_loader  , optimizer  , criterion , epoch)
 
