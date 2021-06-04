@@ -60,11 +60,13 @@ scheduler = StepLR(optimizer, step_size=2, gamma=0.85)
 def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch , scheduler):
     train_loss = []
     val_loss =[]
-
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     for ep in range(epoch):
         scheduler.step()
+        rloss = 0 
+        rvloss= 0 
         for train in train_loader :
 
             optimizer.zero_grad()
@@ -73,9 +75,10 @@ def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch 
 
             output = model(img)
             loss = criterion(output, mask)
+            rloss += loss.item()
             loss.backward()
             optimizer.step()
-        train_loss.append(loss)
+        train_loss.append(rloss/len(train_loader))
 
         if ep %4 == 0 :
             with torch.no_grad():
@@ -84,7 +87,8 @@ def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch 
                     mask =torch.autograd.Variable( train['mask'].to(device))
                     output = model(img)
                     loss_t = criterion(output, mask)
-                val_loss.append(loss_t)
+                    rvloss+= loss_t.item()
+                val_loss.append(rvloss)
             print("loss " , loss , "val loss = " , loss_t)
             
         torch.save(model.state_dict(), "../drive/MyDrive/model2.pt")
