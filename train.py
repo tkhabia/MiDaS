@@ -67,7 +67,7 @@ def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch 
         scheduler.step()
         rloss = 0 
         rvloss= 0 
-        for train in train_loader :
+        for train in tqdm( train_loader) :
 
             optimizer.zero_grad()
             img = torch.autograd.Variable( train['img'].to(device))
