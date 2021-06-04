@@ -37,7 +37,7 @@ class walldata(Dataset):
         mask = cv2.resize( cv2.imread( self.data[index][1] ,  0 ) , ( 256 , 256 ))
         
         img = self.transform(img)
-        mask = mask
+        mask = mask/255
         
         return {"img":img , "mask":mask}
 
@@ -95,6 +95,7 @@ def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch 
     plt.plot(loss , label="loss")
     plt.plot(loss_t , label="Val Loss")
     plt.legend()
+    plt.savefig("out.png")
     plt.show()
 
 train (model  , train_loader , val_loader , optimizer  , criterion , epoch, scheduler)
