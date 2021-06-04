@@ -47,18 +47,20 @@ for i in range(1, 1409):
 
 random.shuffle(data)
 datawall = walldata(data[:len(data)*8//10] , transform) 
-valwall =  walldata(data[:len(data)*8//10] , transform) 
+valwall =  walldata(data[len(data)*8//10 : ] , transform) 
 
 optimizer = torch.optim.Adam( model.parameters(), 1e-3 )
 criterion = nn.L1Loss()
-epoch = 60
+epoch = 50
 train_loader = DataLoader(datawall ,batch_size=16 , shuffle=True , num_workers=2) 
-scheduler = StepLR(optimizer, step_size=2, gamma=0.9)
+val_loader = DataLoader(valwall ,batch_size=16  , num_workers=2) 
+
+scheduler = StepLR(optimizer, step_size=2, gamma=0.85)
 
 def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch , scheduler):
     train_loss = []
     val_loss =[]
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     for ep in range(epoch):
@@ -85,10 +87,11 @@ def train (model  , train_loader , val_loader  , optimizer  , criterion , epoch 
                 val_loss.append(loss_t)
             print("loss " , loss , "val loss = " , loss_t)
             
-        torch.save(model.state_dict(), "../drive/MyDrive/model.pt")
+        torch.save(model.state_dict(), "../drive/MyDrive/model2.pt")
     plt.plot(loss , label="loss")
     plt.plot(loss_t , label="Val Loss")
+    plt.legend()
     plt.show()
 
-train (model  , train_loader  , optimizer  , criterion , epoch, scheduler)
+train (model  , train_loader , val_loader , optimizer  , criterion , epoch, scheduler)
 
